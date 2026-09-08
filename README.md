@@ -1,51 +1,57 @@
-# Welcome to your Convex + Next.js + Clerk app
+# AI Receipt Tracker
 
-This is a [Convex](https://convex.dev/) project created with [`npm create convex`](https://www.npmjs.com/package/create-convex).
+An **event-driven, AI-powered receipt scanning and expense tracking application** built with Next.js 15, Convex, Inngest, and Claude AI. It automates PDF document parsing, structured data extraction, and real-time state synchronization.
 
-After the initial setup (<2 minutes) you'll have a working full-stack app using:
+---
 
-- Convex as your backend (database, server logic)
-- [React](https://react.dev/) as your frontend (web page interactivity)
-- [Next.js](https://nextjs.org/) for optimized web hosting and page routing
-- [Tailwind](https://tailwindcss.com/) for building great looking accessible UI
-- [Clerk](https://clerk.com/) for authentication
+## ⚡ Key Architectural Highlights (For Employers & Engineering Teams)
 
-## Get started
+- **Real-Time Reactive UI**: Leverages **Convex WebSocket subscriptions** (`useQuery`) for instant UI updates when background AI processing completes — eliminating manual polling or custom SSE overhead.
+- **Asynchronous AI Pipeline**: Uses **Inngest Agent Kit** and **Anthropic (Claude)** for multi-agent PDF OCR and structured JSON data extraction (merchant, total, tax, line items).
+- **Decoupled Event Architecture**: PDF uploads trigger background workers asynchronously, maintaining low latency and zero request-blocking on the main HTTP thread.
+- **Authentication & Subscription Control**: Enterprise authentication with **Clerk** (JWT integration) and usage-based feature gating powered by **Schematic**.
 
-If you just cloned this codebase and didn't use `npm create convex`, run:
+---
 
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 15 (App Router), React 19, TypeScript
+- **Backend & Real-time Database**: Convex Serverless DB (WebSockets)
+- **Background Jobs & AI Orchestration**: Inngest + Anthropic API (Claude)
+- **Authentication**: Clerk
+- **Feature Management**: Schematic
+- **Styling**: Tailwind CSS, Radix UI primitives, Lucide Icons
+
+---
+
+## 🚀 Quick Start
+
+### 1. Prerequisites & Environment Setup
+Clone the repository and copy environment variables:
+
+```bash
+cp .env.example .env.local
 ```
-npm install
-npm run dev
+
+Ensure the following keys are populated in `.env.local`:
+- `NEXT_PUBLIC_CONVEX_URL` & `CONVEX_DEPLOYMENT`
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` & `CLERK_SECRET_KEY` & `CLERK_JWT_ISSUER_DOMAIN`
+- `ANTHROPIC_API_KEY`
+- `INNGEST_EVENT_KEY` / `INNGEST_SIGNING_KEY`
+
+### 2. Configure Backend Credentials
+Set the Clerk JWT domain on your Convex Cloud deployment:
+
+```bash
+npx convex env set CLERK_JWT_ISSUER_DOMAIN <your-clerk-issuer-url>
 ```
 
-If you're reading this README on GitHub and want to use this template, run:
+### 3. Install & Launch
+Run frontend and backend services concurrently:
 
+```bash
+pnpm install
+pnpm dev
 ```
-npm create convex@latest -- -t nextjs-clerk
-```
 
-Then:
-
-1. Open your app. There should be a "Claim your application" button from Clerk in the bottom right of your app.
-2. Follow the steps to claim your application and link it to this app.
-3. Follow step 3 in the [Convex Clerk onboarding guide](https://docs.convex.dev/auth/clerk#get-started) to create a Convex JWT template.
-4. Uncomment the Clerk provider in `convex/auth.config.ts`
-5. Paste the Issuer URL as `CLERK_JWT_ISSUER_DOMAIN` to your dev deployment environment variable settings on the Convex dashboard (see [docs](https://docs.convex.dev/auth/clerk#configuring-dev-and-prod-instances))
-
-If you want to sync Clerk user data via webhooks, check out this [example repo](https://github.com/thomasballinger/convex-clerk-users-table/).
-
-## Learn more
-
-To learn more about developing your project with Convex, check out:
-
-- The [Tour of Convex](https://docs.convex.dev/get-started) for a thorough introduction to Convex principles.
-- The rest of [Convex docs](https://docs.convex.dev/) to learn about all Convex features.
-- [Stack](https://stack.convex.dev/) for in-depth articles on advanced topics.
-
-## Join the community
-
-Join thousands of developers building full-stack apps with Convex:
-
-- Join the [Convex Discord community](https://convex.dev/community) to get help in real-time.
-- Follow [Convex on GitHub](https://github.com/get-convex/), star and contribute to the open-source implementation of Convex.
+The application will be available at `http://localhost:3000`.

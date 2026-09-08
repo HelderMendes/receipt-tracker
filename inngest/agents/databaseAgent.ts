@@ -1,0 +1,138 @@
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { client } from "@/lib/schematic";
+import { createAgent, openai, createTool } from "@inngest/agent-kit";
+import { z } from "zod";
+
+const saveToDatabaseTool = createTool({
+  name: "saved_to_database",
+  description: "Saves the given data to the convex database.",
+  parameters: z.object({
+    fileDisplayName: z
+      .string()
+      .describe(
+        "The readable display name of the receipt to show in the UI. The file name is not human always readable, use this to give a more readable name.",
+      ),
+    receiptId: z
+      .string()
+      .describe("The ID of the receipt to update in the database."),
+    merchantName: z.string(),
+    merchantAddress: z.string(),
+    merchantContact: z.string(),
+    transactionData: z.string(),
+    transactionAmount: z
+      .string()
+      .describe(
+        "The total amount of the transaction, summing all the items on the receipt.",
+      ),
+    receiptSummary: z
+      .string()
+      .describe(
+        "A summary of the receipt, including the merchant name, address, contact, transaction date, transaction amount, and currency. Include a human readable summary of the receipt. Mention both invoice number and receipt number if both are available. Include some ket details on the receipt, this is special feature summary so it should include some key details about the items on the receipt with some context",
+      ),
+    currency: z.string(),
+    items: z.array(
+      z
+        .object({
+          name: z.string(),
+          quantity: z.number(),
+          unitPrice: z.number(),
+          totalPrice: z.number(),
+        })
+        .describe(
+          "An array of items purchased, including name, quantity, unit price, and total price of each items.",
+        ),
+    ),
+  }),
+  handler: async (params, context) => {
+    const {
+      fileDisplayName,
+      receiptId,
+      merchantName,
+      merchantAddress,
+      merchantContact,
+      transactionData,
+      transactionAmount,
+      receiptSummary,
+      currency,
+      items,
+    } = params;
+
+    const result = await context.step?.run(
+      "Save-receipt-to-database",
+      async () => {
+        try {
+          // Call the convex mutation to update the receipt with extracted data
+          const { userId } = await context.mutation(
+            api.receipts.updateReceiptWithExtractedData,
+            {
+              id: receiptId as Id<"receipts">,
+              fileDisplayName,
+              merchantName,
+              merchantAddress,
+              merchantContact,
+              transactionData,
+              transactionAmount,
+              receiptSummary,
+              currency,
+              items,
+            },
+          );
+
+          // Track event in schematic
+          await client.track({
+            event: "scan",
+            company: {
+              id: userId,
+            },
+            user: {
+              id: userId,
+            },
+          });
+
+          return {
+            addedToDb: "Success",
+            receiptId,
+            userId,
+            fileDisplayName,
+            merchantName,
+            merchantContact,
+            merchantAddress,
+            transactionData,
+            transactionAmount,
+            currency,
+            items,
+            receiptSummary,
+          };
+        } catch (error) {
+          return {
+            addedToDb: "Failed",
+            error: error instanceof Error ? error.message : "Unknown error",
+          };
+        }
+      },
+    );
+
+    if (result?.addedToDb === "Success") {
+      context.network?.state.kv.set("saved_to_database", true);
+      context.network?.state.kv.set("receipt", receiptId);
+    }
+
+    return result;
+  },
+});
+
+export const databaseAgent = createAgent({
+  name: "Database Agent",
+  description:
+    "Handles saving extracted receipt data and saving to the convex database",
+  system:
+    "You are a helpful assistant that takes key information regarding receipts and saves them to a convex database.",
+  model: openai({
+    model: "gpt-4o-mini",
+    defaultParameters: {
+      max_completion_tokens: 1000,
+    },
+  }),
+  tools: [saveToDatabaseTool],
+});
