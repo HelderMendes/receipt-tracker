@@ -1,5 +1,4 @@
-import { createAgent, createTool } from "@inngest/agent-kit";
-import { anthropic, openai } from "inngest";
+import { createAgent, createTool, openai } from "@inngest/agent-kit";
 import z from "zod";
 
 const parsedPdfTool = createTool({
@@ -29,17 +28,7 @@ const parsedPdfTool = createTool({
           messages: [
             {
               role: "user",
-              content: [
-                {
-                  type: "document",
-                  source: {
-                    type: "url",
-                    url: pdfUrl,
-                  },
-                },
-                {
-                  type: "text",
-                  text: `Extract the data from the receipt PDF and return the structured output as follows:
+              content: `Extract the data from the receipt PDF at URL: ${pdfUrl} and return the structured output as follows:
         {
           "merchant": {
             "name": "Store Name",
@@ -66,8 +55,6 @@ const parsedPdfTool = createTool({
             "currency": "EUR"
           }
         }`,
-                },
-              ],
             },
           ],
         },

@@ -1,5 +1,6 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import convex from "@/lib/convexClient";
 import { client } from "@/lib/schematic";
 import { createAgent, openai, createTool } from "@inngest/agent-kit";
 import { z } from "zod";
@@ -19,7 +20,7 @@ const saveToDatabaseTool = createTool({
     merchantName: z.string(),
     merchantAddress: z.string(),
     merchantContact: z.string(),
-    transactionData: z.string(),
+    transactionDate: z.string(),
     transactionAmount: z
       .string()
       .describe(
@@ -36,7 +37,7 @@ const saveToDatabaseTool = createTool({
         .object({
           name: z.string(),
           quantity: z.number(),
-          unitPrice: z.number(),
+          UnitPrice: z.number(),
           totalPrice: z.number(),
         })
         .describe(
@@ -51,7 +52,7 @@ const saveToDatabaseTool = createTool({
       merchantName,
       merchantAddress,
       merchantContact,
-      transactionData,
+      transactionDate,
       transactionAmount,
       receiptSummary,
       currency,
@@ -63,7 +64,7 @@ const saveToDatabaseTool = createTool({
       async () => {
         try {
           // Call the convex mutation to update the receipt with extracted data
-          const { userId } = await context.mutation(
+          const { userId } = await convex.mutation(
             api.receipts.updateReceiptWithExtractedData,
             {
               id: receiptId as Id<"receipts">,
@@ -71,7 +72,7 @@ const saveToDatabaseTool = createTool({
               merchantName,
               merchantAddress,
               merchantContact,
-              transactionData,
+              transactionDate,
               transactionAmount,
               receiptSummary,
               currency,
@@ -98,7 +99,7 @@ const saveToDatabaseTool = createTool({
             merchantName,
             merchantContact,
             merchantAddress,
-            transactionData,
+            transactionDate,
             transactionAmount,
             currency,
             items,

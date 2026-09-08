@@ -74,40 +74,37 @@ function ReceiptPage() {
   };
 
   // Function to handle deleting the receipt using server action
-  const handleDeleteReceipt=async () => {
-    if(!receiptId) return;
-    
-    if(window.confirm("Are you sure you want to delete this receipt? This action cannot be undone.")) {
+  const handleDeleteReceipt = async () => {
+    if (!receiptId) return;
+
+    if (
+      window.confirm(
+        "Are you sure you want to delete this receipt? This action cannot be undone."
+      )
+    ) {
       try {
         setIsDeleting(true);
 
         // Call the server action to delete the receipt
-        const result=await deleteReceipt(receiptId);
-        if(!result.success) {
+        const result = await deleteReceipt(receiptId);
+        if (!result.success) {
           throw new Error(result.message || "Failed to delete receipt");
         }
 
         // Redirect to receipts list after deletion
         router.push("/receipts");
-
-        
-      } catch(error) {
-        console.error("Error deleting receipt:",error);
+      } catch (error) {
+        console.error("Error deleting receipt:", error);
         alert("Failed to delete receipt. Please try again later.");
+      } finally {
+        setIsDeleting(false);
       }
-    
+    }
+  };
 
   // Convert the url string ID to a Convex ID type
   useEffect(() => {
     try {
-      // // Clean the ID by removing any unwanted characters like closing parenthesis
-      // const cleanId = params.id?.replace(/[^a-zA-Z0-9]/g, "");
-
-      // if (!cleanId) {
-      //   throw new Error("No ID provided");
-      // }
-
-      // const id = cleanId as Id<"receipts">;
       const id = params.id as Id<"receipts">;
       setReceiptId(id);
     } catch (error) {
@@ -443,5 +440,5 @@ function formatFileSize(sizeBytes: number): string {
 
 // Helper function to format currency
 function formatCurrency(amount: number, currency: string = ""): string {
-  return `${amount.toFixed(2)} ${currency ? currency : ""} }`;
+  return `${amount.toFixed(2)}${currency ? ` ${currency}` : ""}`;
 }
