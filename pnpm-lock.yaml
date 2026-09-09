@@ -7,8 +7,6 @@ settings:
 overrides:
   '@inngest/ai': 0.1.6
 
-packageExtensionsChecksum: sha256-Vo/+RR/thNxLEgzIBaGqDWJPytgBlx2dnrqGZjuU1dI=
-
 importers:
 
   .:
