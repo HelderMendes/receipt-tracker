@@ -19,7 +19,23 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-function ReceiptPage() {
+// Helper function to format file sizes
+function formatFileSize(sizeBytes: number): string {
+  if (sizeBytes === 0) return "0 Bytes";
+
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(sizeBytes) / Math.log(k));
+
+  return parseFloat((sizeBytes / k ** i).toFixed(2)) + " " + sizes[i];
+}
+
+// Helper function to format currency
+function formatCurrency(amount: number, currency: string = ""): string {
+  return `${amount.toFixed(2)}${currency ? ` ${currency}` : ""}`;
+}
+
+export default function ReceiptPage() {
   const params = useParams<{ id: string }>();
   const [receiptId, setReceiptId] = useState<Id<"receipts"> | null>(null);
   const router = useRouter();
@@ -125,7 +141,7 @@ function ReceiptPage() {
             </p>
             <Link
               href="/"
-              className="px-6 py-2 bh-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+              className="px-6 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
             >
               Return Home
             </Link>
@@ -306,18 +322,18 @@ function ReceiptPage() {
               {/* Receipt summary */}
               {isSummariesEnabled ? (
                 <div className="mt-6 bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-lg border border-purple-100 shadow-sm">
-                  <div className="flex items-centre mb-4">
+                  <div className="flex items-center mb-4">
                     <h4 className="text-lg font-medium text-purple-700">
-                      Ai Summary
+                      AI Summary
                     </h4>
                   </div>
                   <div className="ml-2 flex">
-                    <Sparkles className="size=3.5 text-yellow-500" />
-                    <Sparkles className="size=3  text-yellow-500 -ml-1" />
+                    <Sparkles className="size-3.5 text-yellow-500" />
+                    <Sparkles className="size-3 text-yellow-500 -ml-1" />
                     {receipt.receiptSummary}
                   </div>
                   <div className="bg-white bg-opacity-60 p-4 border border-purple-100">
-                    <p className="text-sm whitespace-pre-line leading-relaxed tex-gray-700 ">
+                    <p className="text-sm whitespace-pre-line leading-relaxed text-gray-700 ">
                       {receipt.receiptSummary}
                     </p>
                   </div>
@@ -327,15 +343,15 @@ function ReceiptPage() {
                   </div>
                 </div>
               ) : (
-                <div className="mt-6 bg-gary-100 p-6 rounded-lg border border-gray-200 shadow-sm">
-                  <div className="flex items-centre justify-between mb-4">
+                <div className="mt-6 bg-gray-100 p-6 rounded-lg border border-gray-200 shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
                       <h4 className="font-semibold text-gray-500">
                         AI Summary
                       </h4>
                       <div className="ml-2 flex">
-                        <Sparkles className="size=3.5 text-gray-400" />
-                        <Sparkles className="size=3  text-gray-300 -ml-1" />
+                        <Sparkles className="size-3.5 text-gray-400" />
+                        <Sparkles className="size-3 text-gray-300 -ml-1" />
                       </div>
                     </div>
                     <Lock className="size-4 text-gray-500" />
@@ -423,22 +439,4 @@ function ReceiptPage() {
       </div>
     </div>
   );
-}
-
-export default ReceiptPage;
-
-// Helper function to format file sizes
-function formatFileSize(sizeBytes: number): string {
-  if (sizeBytes === 0) return "0 Bytes";
-
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-  const i = Math.floor(Math.log(sizeBytes) / Math.log(k));
-
-  return parseFloat((sizeBytes / k ** i).toFixed(2)) + " " + sizes[i];
-}
-
-// Helper function to format currency
-function formatCurrency(amount: number, currency: string = ""): string {
-  return `${amount.toFixed(2)}${currency ? ` ${currency}` : ""}`;
 }
